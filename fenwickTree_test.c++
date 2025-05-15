@@ -6,8 +6,79 @@
 #include <chrono>
 using namespace std;
 
-// Fenwick Tree testleri için fenwickTree.c++ header olarak dahil edilsin
-#include "fenwickTree.c++"
+// FenwickTree sınıfını doğrudan kullanabilmek için kendi kodumu yazıyorum
+// fenwickTree.c++ içeriğini kopyalayarak main fonksiyonunu çıkartıyorum
+class FenwickTree {
+private:
+    vector<int> bit; // ağaç dizisi
+    int n; // dizinin boyutu
+
+public:
+    // n boyutlu bir Fenwick ağacı oluşturuyoruz
+    FenwickTree(int size) {
+        n = size + 1;
+        bit.resize(n, 0); // 1'den başlayan indeks için n+1 boyutunda
+    }
+    
+    // Varolan bir diziyi kullanarak Fenwick ağacı oluşturur
+    FenwickTree(vector<int>& arr) {
+        n = arr.size() + 1;
+        bit.resize(n, 0);
+        
+        // Diziyi ağaca dönüştür
+        for (int i = 0; i < arr.size(); i++) {
+            update(i, arr[i]);
+        }
+    }
+    
+    // i. indekse val değerini ekleme
+    void update(int i, int val) {
+        i++; // 1-indeksli yapıya dönüştür
+        
+        // İlgili tüm üst düğümleri güncelle
+        while (i < n) {
+            bit[i] += val;
+            i += i & -i; // LSB kullanarak sonraki üst düğüme geç
+        }
+    }
+    
+    // i. indeksteki değeri doğrudan güncelle
+    void setValue(int i, int val) {
+        int currVal = getVal(i);
+        update(i, val - currVal); // Mevcut değeri çıkar, yeni değeri ekle
+    }
+    
+    // i. indeksin gerçek değerini al (tekil değer, toplam değil)
+    int getVal(int i) {
+        return rangeSum(i, i);
+    }
+    
+    // 0'dan i'ye kadar olan toplam
+    int sum(int i) {
+        i++; // 1-indeksli yapıya dönüştür
+        
+        int result = 0;
+        while (i > 0) {
+            result += bit[i];
+            i -= i & -i; // LSB kullanarak bir önceki düğüme geç
+        }
+        return result;
+    }
+    
+    // [l, r] aralığındaki toplamı bul
+    int rangeSum(int l, int r) {
+        return sum(r) - sum(l-1);
+    }
+    
+    // Fenwick ağacının içeriğini yazdırma
+    void printTree() {
+        cout << "Fenwick Ağacı içeriği:\n";
+        cout << "İndeks -> Değer\n";
+        for (int i = 0; i < n-1; i++) {
+            cout << i << " -> " << getVal(i) << endl;
+        }
+    }
+};
 
 // Doğrudan toplam hesaplama (referans için)
 int directSum(vector<int>& arr, int left, int right) {
